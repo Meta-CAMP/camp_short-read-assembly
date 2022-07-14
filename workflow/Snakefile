@@ -37,35 +37,62 @@ if assembler == 'metaviralSPAdes':
 if assembler == 'plasmidSPAdes':
     assembler_call = 'metaplasmidspades.py'
 
+if assembler == 'plasmidSPAdes':
+    assembler_call = 'metaplasmidspades.py'
+
+if assembler == 'SPAdes':
+    assembler_call = 'spades.py'
+
 if 'SPAdes' in assembler:
-    print('here')
-    rule run_metaspades:
-        input:
-            fwd = join(dirs.TMP,'{sample}_1.fastq'),
-            rev = join(dirs.TMP,'{sample}_2.fastq')
-        output:
-            join(dirs.OUT,'assembled','{sample}','contigs.fasta'),
-        log:
-            join(dirs.LOG, 'metaSPAdes', '{sample}.out'),
-        params:
-            assthreads=config['assembly_threads'],
-            metaspades_maxmem=config['metaspades_maxmem'],
-            outpath=join(dirs.OUT,'assembled','{sample}'),
-            assembly_option=assembler_call
-        shell:
-            """
-            {params.assembly_option} --only-assembler  -1 {input.fwd} -2 {input.rev} -o {params.outpath} -t {params.assthreads} -m {paramas.metaspades_maxmem}
-            """    
+    ruleorder: run_metaspades > run_megahit
+if 'megahit' == assembler:
+    ruleorder: run_megahit > run_metaspades
+
+rule run_metaspades:
+    input:
+        fwd = join(dirs.TMP,'{sample}_1.fastq.gz'),
+        rev = join(dirs.TMP,'{sample}_2.fastq.gz'),
+    output:
+        join(dirs.OUT,'assembled','{sample}','contigs.fasta'),
+    log:
+        join(dirs.LOG, 'metaSPAdes', '{sample}.out'),
+    params:
+        assthreads=config['assembly_threads'],
+        metaspades_maxmem=config['metaspades_maxmem'],
+        outpath=join(dirs.OUT,'assembled','{sample}'),
+        assembly_option=assembler_call,
+    shell:
+        """
+        {params.assembly_option} --only-assembler  -1 {input.fwd} -2 {input.rev} -o {params.outpath} -t {params.assthreads} -m {params.metaspades_maxmem}
+        """    
+
+rule run_megahit:
+    input:
+        fwd = join(dirs.TMP,'{sample}_1.fastq.gz'),
+        rev = join(dirs.TMP,'{sample}_2.fastq.gz'),
+    output:
+        join(dirs.OUT,'assembled','{sample}','contigs.fasta'),
+    log:
+        join(dirs.LOG, 'metaSPAdes', '{sample}.out'),
+    params:
+        assthreads=config['assembly_threads'],
+        metaspades_maxmem=config['metaspades_maxmem'],
+        outpath=join(dirs.OUT,'assembled','{sample}'),
+    shell:
+        """
+        megahit  -1 {input.fwd} -2 {input.rev} -o {params.outpath} -t {params.assthreads} -m {params.metaspades_maxmem} --force
+        mv {params.outpath}/final.contigs.fa {params.outpath}/contigs.fasta
+        """    
 
 rule make_config:
     input:
-        expand(join(dirs.OUT,'assembled','{sample}'), sample = SAMPLES)
+        expand(join(dirs.OUT,'assembled','{sample}','contigs.fasta'), sample = SAMPLES)
     output:
         join(dirs.OUT, 'samples.csv')
     run:
         out = []
         for i in input:
-            out.append([i.split('/')[-1].split('.species.bracken')[0],i.replace('.species.bracken','.kraken'),i.replace('.species.bracken','.kreport'),i,i.replace('.species.bracken','.genus.bracken'),i.replace('.species.bracken','.family.bracken'),i.replace('.species.bracken','.order.bracken'),i.replace('.species.bracken','.class.bracken'),i.replace('.species.bracken','.phylum.bracken')])
+            out.append([i.split('/')[-2],i])
             df = pd.DataFrame(out)
             df.columns = ['sample_ID','assembly_directory']
         df.to_csv(str(output), index = False)
