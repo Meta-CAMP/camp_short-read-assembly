@@ -3,9 +3,6 @@
 
 # --- general --- #
 
-some_constant:   2500
-
-
-# --- first_rule --- #
-
-other_constant:    10000
+assembler: "metaSPAdes" # choose between metaSPAdes (default), megahit, rnaSPAdes, viralSPAdes
+assembly_threads: 16
+metaspades_maxmem: 128
