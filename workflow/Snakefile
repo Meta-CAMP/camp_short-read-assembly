@@ -98,39 +98,3 @@ rule make_config:
         df.to_csv(str(output), index = False)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
