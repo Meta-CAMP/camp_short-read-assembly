@@ -9,6 +9,8 @@ CAMP short-read-assembly
 
 .. image:: https://img.shields.io/badge/version-0.1.0-brightgreen
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CynthiaFlaire/camp_short-read-assembly]
+
 
 Overview
 --------
