@@ -2,14 +2,15 @@
 CAMP short-read-assembly
 ============
 
+.. image:: https://colab.research.google.com/assets/colab-badge.svg
+        :target: https://colab.research.google.com/github/CynthiaFlaire/camp_short-read-assembly
+        :alt: Google Colaboratory Notebook
 
 .. image:: https://readthedocs.org/projects/camp-short-read-assembly/badge/?version=latest
         :target: https://camp-short-read-assembly.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
 .. image:: https://img.shields.io/badge/version-0.1.0-brightgreen
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CynthiaFlaire/camp_short-read-assembly]
 
 
 Overview
