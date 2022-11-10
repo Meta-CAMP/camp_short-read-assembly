@@ -54,6 +54,12 @@ Using the Module
  <!--- 
  Add description of your workflow's output files 
  --->
+ 
+**Example usage:**
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg
+        :target: https://colab.research.google.com/github/CynthiaFlaire/camp_short-read-assembly/blob/main/CAMP_Short_Read_Assembly_Tutorial.ipynb
+        :alt: Google Colaboratory Notebook
 
 **Structure**:
 ::
