@@ -22,12 +22,15 @@ git clone <https://github.com/MetaSUB-CAMP/camp_short-read-assembly>
 
 2. Set up the conda environment using ``configs/conda/short-read-assembly.yaml``. 
 
-3. Make sure the installed pipeline works correctly. ``pytest`` only generates temporary outputs so no files should be created.
-
 ```
 cd camp_short-read-assembly
 conda env create -f configs/conda/short-read-assembly.yaml
 conda activate short-read-assembly
+```
+
+3. Make sure the installed pipeline works correctly. ``pytest`` only generates temporary outputs so no files should be created.
+
+```
 pytest .tests/unit/
 ```
 
