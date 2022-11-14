@@ -14,7 +14,7 @@ Approach
 Installation
 ------------
 
-1. Clone repo from `Github tutorial <https://github.com/MetaSUB-CAMP/camp_short-read-assembly>`_.
+1. Clone repo from `Github tutorial <https://github.com/MetaSUB-CAMP/camp_short-read-assembly>`.
 
 2. Set up the conda environment using ``configs/conda/short-read-assembly.yaml``. 
 
