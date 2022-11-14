@@ -1,100 +1,121 @@
-'''Workflow for the CAMP short read assembly module.'''
+'''Workflow for the CAMP short-read assembly module.'''
 
 
 from contextlib import redirect_stderr
 import os
-from os import makedirs
-from os.path import basename, join
+from os.path import abspath, basename, dirname, exists, join
 import pandas as pd
+import shutil # from shutil import copy doesn't work here
 from utils import Workflow_Dirs, ingest_samples
 
 
 # Load and/or make the working directory structure
-dirs = Workflow_Dirs(config['work_dir'], "short-read-taxonomy")
+dirs = Workflow_Dirs(config['work_dir'], "short-read-assembly")
 
 
 # Load sample names and input files 
 SAMPLES = ingest_samples(config['samples'], dirs.TMP)
-    
+
+
 # --- Workflow output --- #
+
+
+def workflow_mode(wildcards):
+    out = []
+    lst = config['assembler'].split(',')
+    if 'metaspades' in lst:
+        out.extend(expand(join(dirs.OUT,'0_metaspades', '{sample}', 'scaffolds.fasta'), sample = SAMPLES))
+    if 'megahit' in lst:
+        out.extend(expand(join(dirs.OUT,'1_megahit', '{sample}', 'contigs.fasta'), sample = SAMPLES))
+    return(out)
+
 
 rule all:
     input:
-        join(dirs.OUT, 'samples.csv')
+        join(dirs.OUT, 'final_reports', 'samples.csv')
+
 
 # --- Workflow steps --- #
 
-assembler=config['assembler']
 
-assembler_call = 'metaspades.py'
-
-if assembler == 'rnaSPAdes':
-    assembler_call = 'rnaspades.py'
-
-if assembler == 'metaviralSPAdes':
-    assembler_call = 'metaviralspades.py'
-
-if assembler == 'plasmidSPAdes':
-    assembler_call = 'metaplasmidspades.py'
-
-if assembler == 'plasmidSPAdes':
-    assembler_call = 'metaplasmidspades.py'
-
-if assembler == 'SPAdes':
-    assembler_call = 'spades.py'
-
-if 'SPAdes' in assembler:
-    ruleorder: run_metaspades > run_megahit
-if 'megahit' == assembler:
-    ruleorder: run_megahit > run_metaspades
-
-rule run_metaspades:
+rule metaspades_assembly:
     input:
         fwd = join(dirs.TMP,'{sample}_1.fastq.gz'),
         rev = join(dirs.TMP,'{sample}_2.fastq.gz'),
     output:
-        join(dirs.OUT,'assembled','{sample}','contigs.fasta'),
+        join(dirs.OUT,'0_metaspades','{sample}', 'scaffolds.fasta'),
     log:
-        join(dirs.LOG, 'metaSPAdes', '{sample}.out'),
+        join(dirs.LOG, 'metaspades', '{sample}.out'),
+    conda:
+        join(config['env_yamls'], 'assemblers.yaml'),
+    threads:
+        config['assembly_threads'],
+    resources:
+        mem_mb = config['assembly_mem_mb'],
     params:
-        assthreads=config['assembly_threads'],
-        metaspades_maxmem=config['metaspades_maxmem'],
-        outpath=join(dirs.OUT,'assembled','{sample}'),
-        assembly_option=assembler_call,
+        out_dir = join(dirs.OUT,'0_metaspades','{sample}'),
+        option = '--' + config['option'],
     shell:
         """
-        {params.assembly_option} --only-assembler  -1 {input.fwd} -2 {input.rev} -o {params.outpath} -t {params.assthreads} -m {params.metaspades_maxmem}
+        if [ -f "{params.out_dir}/K33/assembly_graph.fastg" ]; then
+            spades.py --restart-from k55 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 55
+        elif [ -f "{params.out_dir}/K21/assembly_graph.fastg" ]; then
+            spades.py --restart-from k33 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 33
+        elif [ -f "{params.out_dir}/corrected.yaml" ]; then
+            spades.py --restart-from k21 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 21
+        else
+            spades.py --only-assembler {params.option} -t {threads} -m {resources.mem_mb} -1 {input.fwd} -2 {input.rev} -o {params.out_dir} 
+        fi
         """    
 
-rule run_megahit:
+
+rule megahit_assembly:
     input:
         fwd = join(dirs.TMP,'{sample}_1.fastq.gz'),
         rev = join(dirs.TMP,'{sample}_2.fastq.gz'),
     output:
-        join(dirs.OUT,'assembled','{sample}','contigs.fasta'),
+        join(dirs.OUT,'1_megahit','{sample}', 'contigs.fasta'),
     log:
-        join(dirs.LOG, 'metaSPAdes', '{sample}.out'),
+        join(dirs.LOG, 'megahit', '{sample}.out'),
+    conda:
+        join(config['env_yamls'], 'assemblers.yaml'),
+    threads:
+        config['assembly_threads'],
+    resources:
+        mem_mb = config['assembly_mem_mb'],
     params:
-        assthreads=config['assembly_threads'],
-        metaspades_maxmem=config['metaspades_maxmem'],
-        outpath=join(dirs.OUT,'assembled','{sample}'),
+        out_dir = join(dirs.OUT,'1_megahit','{sample}'),
     shell:
         """
-        megahit  -1 {input.fwd} -2 {input.rev} -o {params.outpath} -t {params.assthreads} -m {params.metaspades_maxmem} --force
-        mv {params.outpath}/final.contigs.fa {params.outpath}/contigs.fasta
+        megahit -t {threads} -m {resources.mem_mb} --force -1 {input.fwd} -2 {input.rev} -o {params.out_dir}
+        mv {params.out_dir}/final.contigs.fa {params.out_dir}/contigs.fasta
         """    
+
 
 rule make_config:
     input:
-        expand(join(dirs.OUT,'assembled','{sample}','contigs.fasta'), sample = SAMPLES)
+        workflow_mode,
     output:
-        join(dirs.OUT, 'samples.csv')
+        join(dirs.OUT, 'final_reports', 'samples.csv')
+    params:
+        out_dir = join(dirs.OUT, 'final_reports'),
+        tmp_dir = dirs.TMP,
     run:
-        out = []
+        dct = {}
         for i in input:
-            out.append([i.split('/')[-2],i])
-            df = pd.DataFrame(out)
-            df.columns = ['sample_ID','assembly_directory']
+            info = str(i).split('/')
+            s = info[-2]
+            a = info[-3].split('_')[1]
+            ctgs = join(params.out_dir, '.'.join([s, a, 'fasta']))
+            shutil.copy(str(i), ctgs)
+            if s not in dct:
+                dct[s] = {}
+            dct[s]['illumina_ctg'] = ctgs
+            dct[s]['illumina_fwd'] = join(str(params.tmp_dir), s + '_1.fastq.gz')
+            dct[s]['illumina_rev'] = join(str(params.tmp_dir), s + '_2.fastq.gz')
+        df = pd.DataFrame.from_dict(dct, orient ='index')
+        df.reset_index(inplace = True)
+        df.rename(columns = {'index': 'sample_name'}, inplace = True)
         df.to_csv(str(output), index = False)
 
 

@@ -1,0 +1,7 @@
+#'''Command-line usage resource config.'''#
+
+
+# --- general --- #
+
+assembly_threads: 20
+assembly_mem_mb:  50000
