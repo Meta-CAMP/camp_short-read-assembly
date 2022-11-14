@@ -17,6 +17,7 @@ def ingest_samples(samples, tmp):
     s = list(df.index)
     lst = df.values.tolist()
     for i,l in enumerate(lst):
+        print(l[0])
         if not exists(join(tmp, s[i] + '_1.fastq.gz')):
             symlink(l[0], join(tmp, s[i] + '_1.fastq.gz'))
             symlink(l[1], join(tmp, s[i] + '_2.fastq.gz'))
