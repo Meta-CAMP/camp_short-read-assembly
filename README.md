@@ -1,4 +1,4 @@
-# CAMP: Short-Read Assembly
+Short-Read Assembly
 
 Overview
 --------
@@ -117,6 +117,5 @@ Credits
 
 * This package was created with `Cookiecutter <https://github.com/cookiecutter/cookiecutter>`_ as a simplified version of the `project template <https://github.com/audreyr/cookiecutter-pypackage>`_.
 * Free software: MIT
-* Documentation: https://short-read-quality-control.readthedocs.io. 
 
 
