@@ -6,7 +6,7 @@ import os
 from os.path import abspath, basename, dirname, exists, join
 import pandas as pd
 import shutil # from shutil import copy doesn't work here
-from utils import Workflow_Dirs, ingest_samples
+from utils import Workflow_Dirs, ingest_samples, calc_ctg_lens
 
 
 # Load and/or make the working directory structure
@@ -15,6 +15,12 @@ dirs = Workflow_Dirs(config['work_dir'], "short-read-assembly")
 
 # Load sample names and input files 
 SAMPLES = ingest_samples(config['samples'], dirs.TMP)
+ASSEMBS = []
+for a in config['assembler'].split(','):
+    if 'metaspades' in a:
+        ASSEMBS.append('0_metaspades')
+    if 'megahit' in a:
+        ASSEMBS.append('1_megahit')
 
 
 # --- Workflow output --- #
@@ -22,17 +28,16 @@ SAMPLES = ingest_samples(config['samples'], dirs.TMP)
 
 def workflow_mode(wildcards):
     out = []
-    lst = config['assembler'].split(',')
-    if 'metaspades' in lst:
-        out.extend(expand(join(dirs.OUT,'0_metaspades', '{sample}', 'scaffolds.fasta'), sample = SAMPLES))
-    if 'megahit' in lst:
-        out.extend(expand(join(dirs.OUT,'1_megahit', '{sample}', 'contigs.fasta'), sample = SAMPLES))
+    for a in ASSEMBS:
+        out.extend(expand(join(dirs.OUT, a, '{sample}', 'scaffolds.fasta'), sample = SAMPLES))
     return(out)
 
 
 rule all:
     input:
-        join(dirs.OUT, 'final_reports', 'samples.csv')
+        join(dirs.OUT, 'final_reports', 'samples.csv'),
+        join(dirs.OUT, 'final_reports', 'ctg_stats.csv'),
+        join(dirs.OUT, 'final_reports', 'ctg_lens.csv')
 
 
 # --- Workflow steps --- #
@@ -74,7 +79,7 @@ rule megahit_assembly:
         fwd = join(dirs.TMP,'{sample}_1.fastq.gz'),
         rev = join(dirs.TMP,'{sample}_2.fastq.gz'),
     output:
-        join(dirs.OUT,'1_megahit','{sample}', 'contigs.fasta'),
+        join(dirs.OUT,'1_megahit','{sample}', 'scaffolds.fasta'),
     log:
         join(dirs.LOG, 'megahit', '{sample}.out'),
     conda:
@@ -88,8 +93,45 @@ rule megahit_assembly:
     shell:
         """
         megahit -t {threads} -m {resources.mem_mb} --force -1 {input.fwd} -2 {input.rev} -o {params.out_dir}
-        mv {params.out_dir}/final.contigs.fa {params.out_dir}/contigs.fasta
+        cp {params.out_dir}/final.contigs.fa {params.out_dir}/scaffolds.fasta
         """    
+
+
+rule step_statistics:
+    input:
+        join(dirs.OUT, '{asm}', '{sample}', 'scaffolds.fasta'),
+    output:
+        stats = join(dirs.OUT, '{asm}', '{sample}', 'ctg_stats.csv'),
+        lens = join(dirs.OUT, '{asm}', '{sample}', 'ctg_lens.csv'),
+    resources:
+        mem_mb = config['count_reads_mem_mb'],
+    params:
+        sample = '{sample}',
+        asm = '{asm}',
+    run:
+        calc_ctg_lens(str(params.sample), str(params.asm), input, str(output.stats), str(output.lens))
+
+
+rule concat_statistics:
+    input:
+        expand(join(dirs.OUT, '{asm}', '{sample}', 'ctg_stats.csv'), asm = ASSEMBS, sample = SAMPLES),
+    output:
+        join(dirs.OUT, 'final_reports', 'ctg_stats.csv'),
+    shell:
+        """
+        echo -e 'sample_name,assembler,num_ctgs,total_size,mean_ctg_len' | cat - {input} > {output}
+        """
+
+
+rule concat_lengths:
+    input:
+        expand(join(dirs.OUT, '{asm}', '{sample}', 'ctg_lens.csv'), asm = ASSEMBS, sample = SAMPLES),
+    output:
+        join(dirs.OUT, 'final_reports', 'ctg_lens.csv'),
+    shell:
+        """
+        echo -e 'sample_name,assembler,ctg_size' | cat - {input} > {output}
+        """
 
 
 rule make_config:
@@ -117,5 +159,4 @@ rule make_config:
         df.reset_index(inplace = True)
         df.rename(columns = {'index': 'sample_name'}, inplace = True)
         df.to_csv(str(output), index = False)
-
 

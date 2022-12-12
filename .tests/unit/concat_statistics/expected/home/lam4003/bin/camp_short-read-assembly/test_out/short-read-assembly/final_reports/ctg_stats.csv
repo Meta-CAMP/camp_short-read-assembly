@@ -1,0 +1,3 @@
+sample_name,assembler,num_ctgs,total_size,mean_ctg_len
+zymo_pos_ctrl,0_metaspades,8,1213,151.62
+zymo_pos_ctrl,1_megahit,0,0,0

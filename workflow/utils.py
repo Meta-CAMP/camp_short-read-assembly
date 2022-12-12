@@ -6,7 +6,7 @@
 
 import gzip
 import os
-from os import makedirs, symlink, system
+from os import makedirs, symlink, system, stat
 from os.path import abspath, basename, exists, join
 import pandas as pd
 import shutil
@@ -23,6 +23,11 @@ def ingest_samples(samples, tmp):
     return s
 
 
+def check_make(d):
+    if not exists(d):
+        makedirs(d)
+
+
 class Workflow_Dirs:
     '''Management of the working directory tree.'''
     OUT = ''
@@ -33,18 +38,15 @@ class Workflow_Dirs:
         self.OUT = join(work_dir, module)
         self.TMP = join(work_dir, 'tmp') 
         self.LOG = join(work_dir, 'logs') 
-        if not exists(self.OUT):
-            makedirs(self.OUT)
-            makedirs(join(self.OUT, '0_metaspades'))
-            makedirs(join(self.OUT, '1_megahit'))
-            makedirs(join(self.OUT, 'final_reports'))
-        if not exists(self.TMP):
-            makedirs(self.TMP)
-        if not exists(self.LOG):
-            # Add custom subdirectories to organize rule logs
-            makedirs(self.LOG)
-            makedirs(join(self.LOG, 'metaspades'))
-            makedirs(join(self.LOG, 'megahit'))
+        check_make(self.OUT)
+        out_dirs = ['0_metaspades', '1_megahit', 'final_reports']
+        for d in out_dirs: 
+            check_make(join(self.OUT, d))
+        check_make(self.TMP)
+        check_make(self.LOG)
+        log_dirs = ['metaspades', 'megahit']
+        for d in log_dirs: 
+            check_make(join(self.LOG, d))
 
 
 def cleanup_files(work_dir, df):
@@ -80,5 +82,29 @@ def print_cmds(log):
 
 
 # --- Workflow functions --- #
+
+
+def calc_ctg_lens(sp, asm, fa, f_summ, f_len): # A FastA file
+    # Extract contig lengths and report i) the entire list and ii) a summary
+    seq_lens = []
+    ctg = ''
+    out = "%s,%s," % (sp, asm)
+    if stat(fa).st_size == 0:  # Handle empty FastAs
+        out += "0,0,0"
+        open(f_len, 'w').write('')
+    else:
+        with open(fa, 'r') as f_in, open(f_len, 'w') as f_out:
+            for line in f_in:
+                if '>' in line:
+                    s = len(ctg)
+                    seq_lens.append(s)
+                    f_out.write(sp + ',' + asm + ',' + str(s) + '\n')
+                    ctg = ''
+                else:
+                    ctg += line.strip()
+        out += "%d,%d,%.2f" % (len(seq_lens), sum(seq_lens), float(sum(seq_lens) / len(seq_lens)))
+
+    with open(f_summ, 'w') as f_out:
+        f_out.write(out + '\n')
 
 

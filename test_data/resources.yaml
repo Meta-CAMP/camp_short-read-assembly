@@ -6,5 +6,5 @@ count_reads_mem_mb: 100000
 
 # --- general --- #
 
-assembly_threads: 30
-assembly_mem_mb:  200000
+assembly_threads: 15
+assembly_mem_mb:  50000

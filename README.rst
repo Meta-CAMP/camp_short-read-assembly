@@ -100,6 +100,22 @@ Using the Module
         -s /path/to/samples.csv > cmds.txt
     python /path/to/camp_short-read-assembly/workflow/short-read-assembly.py commands cmds.txt
 
+7. If for some reason the module keeps failing, CAMP can print a script containing all of the remaining commands that can be run manually. 
+::
+
+    python3 /path/to/camp_short-read-assembly/workflow/short-read-assembly.py \
+        --dry_run \
+        -d /path/to/work/dir \
+        -s /path/to/samples.csv > cmds.txt
+    python3 /path/to/camp_short-read-assembly/workflow/short-read-assembly.py \
+        commands cmds.txt
+
+8. To plot grouped bar graph(s) of the number of reads and bases in each *de novo* assembly (from each sample), set up the dataviz environment and follow the instructions in the Jupyter notebook:
+::
+    conda env create -f configs/conda/dataviz.yaml
+    conda activate dataviz
+    jupyter notebook &
+
 Extending the Module
 --------------------
 
