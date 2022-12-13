@@ -13,13 +13,13 @@ import shutil
 
 
 def ingest_samples(samples, tmp):
-    df = pd.read_csv(samples, header = 0, index_col = 0) 
+    df = pd.read_csv(samples, header = 0, index_col = 0) # name, fwd, rev
     s = list(df.index)
     lst = df.values.tolist()
     for i,l in enumerate(lst):
         if not exists(join(tmp, s[i] + '_1.fastq.gz')):
-            symlink(l[0], join(tmp, s[i] + '_1.fastq.gz'))
-            symlink(l[1], join(tmp, s[i] + '_2.fastq.gz'))
+            symlink(abspath(l[0]), join(tmp, s[i] + '_1.fastq.gz'))
+            symlink(abspath(l[1]), join(tmp, s[i] + '_2.fastq.gz'))
     return s
 
 
