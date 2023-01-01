@@ -7,7 +7,7 @@
 import gzip
 import os
 from os import makedirs, symlink, system, stat
-from os.path import abspath, basename, exists, join
+from os.path import abspath, basename, exists, getsize, join
 import pandas as pd
 import shutil
 
@@ -89,10 +89,7 @@ def calc_ctg_lens(sp, asm, fa, f_summ, f_len): # A FastA file
     seq_lens = []
     ctg = ''
     out = "%s,%s," % (sp, asm)
-    if stat(fa).st_size == 0:  # Handle empty FastAs
-        out += "0,0,0"
-        open(f_len, 'w').write('')
-    else:
+    if getsize(fa):  # Handle empty FastAs
         with open(fa, 'r') as f_in, open(f_len, 'w') as f_out:
             for line in f_in:
                 if '>' in line:
@@ -103,7 +100,10 @@ def calc_ctg_lens(sp, asm, fa, f_summ, f_len): # A FastA file
                 else:
                     ctg += line.strip()
         out += "%d,%d,%.2f" % (len(seq_lens), sum(seq_lens), float(sum(seq_lens) / len(seq_lens)))
-
+    else:
+        out += "0,0,0"
+        with open(f_len, 'w') as f_out:
+            f_out.write('')
     with open(f_summ, 'w') as f_out:
         f_out.write(out + '\n')
 

@@ -24,12 +24,21 @@ Installation
 
 2. Set up the conda environment (contains, Snakemake) using ``configs/conda/short-read-assembly.yaml``. 
 
-3. Make sure the installed pipeline works correctly. ``pytest`` only generates temporary outputs so no files should be created.
+3. Update the locations of the test datasets in ``samples.csv``, and the relevant parameters in ``configs/parameters.yaml``.
+
+4. Make sure the installed pipeline works correctly. 
 ::
+    # Create and activate conda environment 
     cd camp_short-read-assembly
     conda env create -f configs/conda/short-read-assembly.yaml
     conda activate short-read-assembly
-    pytest .tests/unit/
+    # Run tests on the included sample dataset
+    python /path/to/camp_short-read-assembly/workflow/short-read-assembly.py \
+    -d /path/to/camp_short-read-assembly/test_out \
+    -s /path/to/camp_short-read-assembly/test_data/samples.csv \
+    -p /path/to/camp_short-read-assembly/test_data/parameters.yaml \
+    -r /path/to/camp_short-read-assembly/test_data/resources.yaml \
+    --cores 20
 
 Using the Module
 ----------------
@@ -49,11 +58,11 @@ Using the Module
         ├── short-read-assembly.py
         ├── utils.py
         └── __init__.py
-* ``workflow/short-read-assembly.py``: Click-based CLI that wraps the ``snakemake`` and unit test generation commands for clean management of parameters, resources, and environment variables.
+* ``workflow/short-read-assembly.py``: Click-based CLI that wraps the ``snakemake`` and other commands for clean management of parameters, resources, and environment variables.
 * ``workflow/Snakefile``: The ``snakemake`` pipeline. 
 * ``workflow/utils.py``: Sample ingestion and work directory setup functions, and other utility functions used in the pipeline and the CLI.
 
-1. Make your own ``samples.csv`` based on the template in ``configs/samples.csv``. Sample test data can be found in ``test_data/``. 
+1. Make your own ``samples.csv`` based on the template in ``configs/samples.csv``. 
     - ``ingest_samples`` in ``workflow/utils.py`` expects Illumina reads in FastQ (may be gzipped) form and de novo assembled contigs in FastA form
     - ``samples.csv`` requires either absolute paths or paths relative to the directory that the module is being run in
 
@@ -116,6 +125,15 @@ Using the Module
     conda activate dataviz
     jupyter notebook &
 
+Updating the Module
+--------------------
+
+What if you've customized some components of the module, but you still want to update the rest of the module with latest version of the standard CAMP? Just do the following from within the module's home directory:
+    - The flag with the setting ``-X ours`` forces conflicting hunks to be auto-resolved cleanly by favoring the local (i.e.: your) version.
+::
+    cd /path/to/camp_short-read-assembly
+    git pull -X ours
+
 Extending the Module
 --------------------
 
@@ -133,13 +151,8 @@ These instructions are meant for developers who have made a tool and want to int
 3. If applicable, update the default conda config using ``conda env export > config/conda/short-read-assembly.yaml`` with your tool and its dependencies. 
     - If there are dependency conflicts, make a new conda YAML under ``configs/conda`` and specify its usage in specific rules using the ``conda`` option (see ``first_rule`` for an example).
 4. Add your tool's installation and running instructions to the module documentation and (if applicable) add the repo to your `Read the Docs account <https://readthedocs.org/>`_ + turn on the Read the Docs service hook.
-5. Run the pipeline once through to make sure everything works using the test data in ``test_data/`` if appropriate, or your own appropriately-sized test data. Then, generate unit tests to ensure that others can sanity-check their installations.
+5. Run the pipeline once through to make sure everything works using the test data in ``test_data/`` if appropriate, or your own appropriately-sized test data. 
     * Note: Python functions imported from ``utils.py`` into ``Snakefile`` should be debugged on the command-line first before being added to a rule because Snakemake doesn't port standard output/error well when using ``run:``.
-::
-    python /path/to/camp_short-read-assembly/workflow/short-read-assembly.py \
-        (--unit_test) \
-        -d /path/to/work/dir \
-        -s /path/to/samples.csv
 
 6. Increment the version number of the modular pipeline.
 ::
