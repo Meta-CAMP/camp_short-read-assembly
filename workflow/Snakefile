@@ -33,6 +33,11 @@ def workflow_mode(wildcards):
     return(out)
 
 
+if config['option'] != '':
+    option = '--' + config['option'],
+else:
+    option = ''
+    
 rule all:
     input:
         join(dirs.OUT, 'final_reports', 'samples.csv'),
@@ -59,15 +64,15 @@ rule metaspades_assembly:
         mem_mb = config['assembly_mem_mb'],
     params:
         out_dir = join(dirs.OUT,'0_metaspades','{sample}'),
-        option = '--' + config['option'],
+        option = option,
     shell:
         """
         if [ -f "{params.out_dir}/K33/assembly_graph.fastg" ]; then
-            spades.py --restart-from k55 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 55
+            spades.py --only-assembler {params.option} --restart-from k55 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 55
         elif [ -f "{params.out_dir}/K21/assembly_graph.fastg" ]; then
-            spades.py --restart-from k33 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 33
+            spades.py --only-assembler {params.option} --restart-from k33 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 33
         elif [ -f "{params.out_dir}/corrected.yaml" ]; then
-            spades.py --restart-from k21 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 21
+            spades.py --only-assembler {params.option} --restart-from k21 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 21
         else
             spades.py --only-assembler {params.option} -t {threads} -m {resources.mem_mb} -1 {input.fwd} -2 {input.rev} -o {params.out_dir} 
         fi
