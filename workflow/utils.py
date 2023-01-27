@@ -89,8 +89,12 @@ def calc_ctg_lens(sp, asm, fa, f_summ, f_len): # A FastA file
     seq_lens = []
     ctg = ''
     out = "%s,%s," % (sp, asm)
-    if getsize(fa):  # Handle empty FastAs
+    print("mark 0", str(sp), fa)
+    print(fa)
+    fa = str(fa)
+    if os.path.getsize(fa) > 0:  # Handle empty FastAs
         with open(fa, 'r') as f_in, open(f_len, 'w') as f_out:
+            print("mark 0.1", str(sp))
             for line in f_in:
                 if '>' in line:
                     s = len(ctg)
@@ -100,11 +104,17 @@ def calc_ctg_lens(sp, asm, fa, f_summ, f_len): # A FastA file
                 else:
                     ctg += line.strip()
         out += "%d,%d,%.2f" % (len(seq_lens), sum(seq_lens), float(sum(seq_lens) / len(seq_lens)))
+        print("mark 1", str(sp))
     else:
         out += "0,0,0"
         with open(f_len, 'w') as f_out:
-            f_out.write('')
+            # f_out.write('')
+            pass
+        print("mark 2", str(sp))
     with open(f_summ, 'w') as f_out:
         f_out.write(out + '\n')
+        pass
+    print("successfully run", str(sp))
+    return
 
-
+# utils.calc_ctg_lens('zymo_pos_ctrl', '0_metaspades', '/home/chf4012/camp_short-read-assembly/test_data/short-read-assembly/0_metaspades/zymo_pos_ctrl/scaffolds.fasta', '/home/chf4012/camp_short-read-assembly/test_data/short-read-assembly/0_metaspades/zymo_pos_ctrl/ctg_stats.csv', '/home/chf4012/camp_short-read-assembly/test_data/short-read-assembly/0_metaspades/zymo_pos_ctrl/ctg_lens.csv')

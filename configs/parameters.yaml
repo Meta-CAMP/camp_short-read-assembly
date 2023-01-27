@@ -6,7 +6,7 @@
 # Choose either 'megahit', 'metaspades', or both
 assembler:  'metaspades' 
 # The default is 'meta' (metagenomics DNA) but one of 'rna' (RNA-Seq), 'metaviral' (viral DNA in a metagenomic context), or 'metaplasmid' (plasmid DNA in a metagenomic context) can also be selected
-option:     ''
+option:     'meta'
 work_dir: "/pbtech_mounts/homes064/chf4012/camp_short-read-assembly"
 samples: "/home/chf4012/camp_short-read-assembly/test_data/samples.csv"
 env_yamls:  "/home/chf4012/camp_short-read-assembly/configs"
