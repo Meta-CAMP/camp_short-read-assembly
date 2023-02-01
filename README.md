@@ -20,7 +20,7 @@ Installation
 git clone <https://github.com/MetaSUB-CAMP/camp_short-read-assembly>
 ```
 
-2. Set up the conda environment using ``configs/conda/short-read-assembly.yaml``. 
+2. Set up the conda environment using ``configs/conda/short-read-assembly.yaml``. (Another option would be to use mamba for higher speed)
 
 ```
 cd camp_short-read-assembly
@@ -28,11 +28,6 @@ conda env create -f configs/conda/short-read-assembly.yaml
 conda activate short-read-assembly
 ```
 
-3. Make sure the installed pipeline works correctly. ``pytest`` only generates temporary outputs so no files should be created.
-
-```
-pytest .tests/unit/
-```
 
 Quickstart
 ----------
@@ -41,15 +36,32 @@ Running each CAMP module takes the same three steps, listed below.
 
 1. As with all CAMP modules, update the parameters.yaml file:
 
-<TABLE OF PARAMETERS AND DESCRIPTIONS>
+| parameter | explanation and options.                                                    | 
+|-----------|-----------------------------------------------------------------------------|
+| assembler       |  the type(s) of assemblers to be used in the pipeline, options 'megahit', 'metaspades', or 'megahit, metaspades' |
+| option     |  the type of assembly you try to build, e.g. 'meta' for metagenomes, 'rna' for RNA-seq, 'meyaviral' for viral DNA in metagenome, 'metaplasmid' for plasmid DNA in a metagenome, or '' for regular assembly such as isolates.  |
+| work_dir      |  the path to the directory of the repo `camp_short-read-assembly` on your machine  |
+| samples  |  the path to the sample csv file as specified in the next point  |
+| env_yamls  |  the path to the directory containing the environmental yaml files  |
 
-2. Generate your samples.csv file in the following format:
+2. Generate your samples.csv file in the following format (in a csv file):
 
-<SAMPLES.CSV FORMAT>
+|  | illumina_fwd                                                    |  illumina_rev |
+|-----------|-----------------------------------------------------------------------------|---|
+| SAMPLE_NAME      | path to forward read fastq.gz file | path to backward read fastq.gz file  |
+| ...      | ...                         |...   |
 
 3. Deploy!
 
-<SNAKEMAKE COMMAND>
+```
+python ./workflow/short-read-assembly.py -d ./test_data -s ./test_data/samples.csv
+```
+
+Note: to speed up, you can specify the number of cores with the `--core` flag; to continue a Snakemake process that broke accidentally, you might need to use the `--unlock` Snakemake flag. This can be applied when you run the pipeline on a cluster as well.
+
+```
+python ./workflow/short-read-assembly.py -slurm --cores 24 -d ./test_data -s ./test_data/samples.csv --unlock
+```
 
 Module details
 ---------------
