@@ -6,11 +6,16 @@ import os
 from os.path import abspath, basename, dirname, exists, join
 import pandas as pd
 import shutil # from shutil import copy doesn't work here
-from utils import Workflow_Dirs, ingest_samples, calc_ctg_lens
+from utils import Workflow_Dirs, ingest_samples
 
 
 # Load and/or make the working directory structure
 dirs = Workflow_Dirs(config['work_dir'], "short-read-assembly")
+
+
+# Specify the location of any external resources and scripts
+dirs_ext = config['ext'] # join(dirname(abspath(__file__)), 'ext')
+dirs_scr = join(dirs_ext, 'scripts')
 
 
 # Load sample names and input files 
@@ -68,13 +73,14 @@ rule metaspades_assembly:
     shell:
         """
         if [ -f "{params.out_dir}/K33/assembly_graph.fastg" ]; then
-            spades.py --only-assembler {params.option} --restart-from k55 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 55
+            spades.py --restart-from k55 -o {params.out_dir} -t {threads} -m {resources.mem_mb} >> {log} 2>&1 # Restart from k = 55
         elif [ -f "{params.out_dir}/K21/assembly_graph.fastg" ]; then
-            spades.py --only-assembler {params.option} --restart-from k33 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 33
+            spades.py --restart-from k33 -o {params.out_dir} -t {threads} -m {resources.mem_mb} >> {log} 2>&1 # Restart from k = 33
         elif [ -f "{params.out_dir}/corrected.yaml" ]; then
-            spades.py --only-assembler {params.option} --restart-from k21 -o {params.out_dir} -t {threads} -m {resources.mem_mb} # Restart from k = 21
+            spades.py --restart-from k21 -o {params.out_dir} -t {threads} -m {resources.mem_mb} >> {log} 2>&1 # Restart from k = 21
         else
-            spades.py --only-assembler {params.option} -t {threads} -m {resources.mem_mb} -1 {input.fwd} -2 {input.rev} -o {params.out_dir} 
+            spades.py --only-assembler {params.option} -t {threads} -m {resources.mem_mb} -1 {input.fwd} -2 {input.rev} -o {params.out_dir} \
+            > {log} 2>&1
         fi
         """    
 
@@ -97,7 +103,7 @@ rule megahit_assembly:
         out_dir = join(dirs.OUT,'1_megahit','{sample}'),
     shell:
         """
-        megahit -t {threads} -m {resources.mem_mb} --force -1 {input.fwd} -2 {input.rev} -o {params.out_dir}
+        megahit -t {threads} -m {resources.mem_mb} --force -1 {input.fwd} -2 {input.rev} -o {params.out_dir} > {log} 2>&1
         cp {params.out_dir}/final.contigs.fa {params.out_dir}/scaffolds.fasta
         """    
 
@@ -113,8 +119,11 @@ rule step_statistics:
     params:
         sample = '{sample}',
         asm = '{asm}',
-    run:
-        calc_ctg_lens(str(params.sample), str(params.asm), input, str(output.stats), str(output.lens))
+        calc_script = join(dirs_scr, 'calc_ctg_lens.py'),
+    shell:
+        """
+        python {params.calc_script} {params.sample} {params.asm} {input} {output.stats} {output.lens}
+        """
 
 
 rule concat_statistics:
@@ -155,11 +164,11 @@ rule make_config:
             a = info[-3].split('_')[1]
             ctgs = join(params.out_dir, '.'.join([s, a, 'fasta']))
             shutil.copy(str(i), ctgs)
-            if s not in dct:
-                dct[s] = {}
-            dct[s]['illumina_ctg'] = ctgs
-            dct[s]['illumina_fwd'] = join(str(params.tmp_dir), s + '_1.fastq.gz')
-            dct[s]['illumina_rev'] = join(str(params.tmp_dir), s + '_2.fastq.gz')
+            sp = s + '_' + a
+            dct[sp] = {}
+            dct[sp]['illumina_ctg'] = ctgs
+            dct[sp]['illumina_fwd'] = join(str(params.tmp_dir), s + '_1.fastq.gz')
+            dct[sp]['illumina_rev'] = join(str(params.tmp_dir), s + '_2.fastq.gz')
         df = pd.DataFrame.from_dict(dct, orient ='index')
         df.reset_index(inplace = True)
         df.rename(columns = {'index': 'sample_name'}, inplace = True)

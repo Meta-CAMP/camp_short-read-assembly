@@ -59,22 +59,21 @@ def cleanup_files(work_dir, df):
             system('rm -rf ' + join(ms_dir, 'K55'))
 
 
-def print_cmds(log):
-    fo = basename(log).split('.')[0] + '.cmds'
-    lines = open(log, 'r').read().split('\n')
-    fi = [l for l in lines if l != '']
+def print_cmds(f):
+    # fo = basename(log).split('.')[0] + '.cmds'
+    # lines = open(log, 'r').read().split('\n')
+    fi = [l for l in f.split('\n') if l != '']
     write = False
-    with open(fo, 'w') as f_out:
+    with open('commands.sh', 'w') as f_out:
         for l in fi:
             if 'rule' in l:
                 f_out.write('# ' + l.strip().replace('rule ', '').replace(':', '') + '\n')
-            if 'wildcards' in l: 
+                write = False
+            if 'wildcards' in l:
                 f_out.write('# ' + l.strip().replace('wildcards: ', '') + '\n')
             if 'resources' in l:
-                write = True 
+                write = True
                 l = ''
-            if '[' in l: 
-                write = False 
             if write:
                 f_out.write(l.strip() + '\n')
             if 'rule make_config' in l:
@@ -83,38 +82,3 @@ def print_cmds(log):
 
 # --- Workflow functions --- #
 
-
-def calc_ctg_lens(sp, asm, fa, f_summ, f_len): # A FastA file
-    # Extract contig lengths and report i) the entire list and ii) a summary
-    seq_lens = []
-    ctg = ''
-    out = "%s,%s," % (sp, asm)
-    print("mark 0", str(sp), fa)
-    print(fa)
-    fa = str(fa)
-    if os.path.getsize(fa) > 0:  # Handle empty FastAs
-        with open(fa, 'r') as f_in, open(f_len, 'w') as f_out:
-            print("mark 0.1", str(sp))
-            for line in f_in:
-                if '>' in line:
-                    s = len(ctg)
-                    seq_lens.append(s)
-                    f_out.write(sp + ',' + asm + ',' + str(s) + '\n')
-                    ctg = ''
-                else:
-                    ctg += line.strip()
-        out += "%d,%d,%.2f" % (len(seq_lens), sum(seq_lens), float(sum(seq_lens) / len(seq_lens)))
-        print("mark 1", str(sp))
-    else:
-        out += "0,0,0"
-        with open(f_len, 'w') as f_out:
-            # f_out.write('')
-            pass
-        print("mark 2", str(sp))
-    with open(f_summ, 'w') as f_out:
-        f_out.write(out + '\n')
-        pass
-    print("successfully run", str(sp))
-    return
-
-# utils.calc_ctg_lens('zymo_pos_ctrl', '0_metaspades', '/home/chf4012/camp_short-read-assembly/test_data/short-read-assembly/0_metaspades/zymo_pos_ctrl/scaffolds.fasta', '/home/chf4012/camp_short-read-assembly/test_data/short-read-assembly/0_metaspades/zymo_pos_ctrl/ctg_stats.csv', '/home/chf4012/camp_short-read-assembly/test_data/short-read-assembly/0_metaspades/zymo_pos_ctrl/ctg_lens.csv')
