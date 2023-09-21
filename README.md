@@ -1,6 +1,6 @@
 # Short-Read Assembly
 
-[![Documentation Status](https://img.shields.io/readthedocs/camp_short-read-assembly)](https://camp-documentation.readthedocs.io/en/latest/short-read-assembly.html) ![Version](https://img.shields.io/badge/version-0.4.0-brightgreen)
+[![Documentation Status](https://img.shields.io/readthedocs/camp_short-read-assembly)](https://camp-documentation.readthedocs.io/en/latest/short-read-assembly.html) ![Version](https://img.shields.io/badge/version-0.5.0-brightgreen)
 
 ## Overview
 

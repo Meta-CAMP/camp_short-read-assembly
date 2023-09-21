@@ -12,6 +12,14 @@ import pandas as pd
 import shutil
 
 
+def extract_from_gzip(ap, out):
+    if open(ap, 'rb').read(2) == b'\x1f\x8b': # If the input is gzipped
+        with gzip.open(ap, 'rb') as f_in, open(out, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    else: # Otherwise, symlink
+        symlink(ap, out)
+
+
 def ingest_samples(samples, tmp):
     df = pd.read_csv(samples, header = 0, index_col = 0) # name, fwd, rev
     s = list(df.index)
@@ -39,12 +47,12 @@ class Workflow_Dirs:
         self.TMP = join(work_dir, 'tmp') 
         self.LOG = join(work_dir, 'logs') 
         check_make(self.OUT)
-        out_dirs = ['0_metaspades', '1_megahit', 'final_reports']
+        out_dirs = ['0_metaspades', '1_megahit', '2_quast', 'final_reports']
         for d in out_dirs: 
             check_make(join(self.OUT, d))
         check_make(self.TMP)
         check_make(self.LOG)
-        log_dirs = ['metaspades', 'megahit']
+        log_dirs = ['metaspades', 'megahit', 'quast']
         for d in log_dirs: 
             check_make(join(self.LOG, d))
 
@@ -58,6 +66,14 @@ def cleanup_files(work_dir, df):
             system('rm -rf ' + join(ms_dir, 'K33'))
             system('rm -rf ' + join(ms_dir, 'K55'))
 
+# To remove
+# rm test_out/short-read-assembly/0_metaspades/uhgg/assembly_graph_with_scaffolds.gfa
+# rm test_out/short-read-assembly/0_metaspades/uhgg/assembly_graph_after_simplification.gfa
+# rm test_out/short-read-assembly/0_metaspades/uhgg/before_rr.fasta
+# rm test_out/short-read-assembly/0_metaspades/uhgg/first_pe_contigs.fasta
+# rm -r test_out/short-read-assembly/0_metaspades/uhgg/misc
+# rm test_out/short-read-assembly/0_metaspades/uhgg/strain_graph.gfa
+# rm -r test_out/short-read-assembly/1_megahit/uhgg/intermediate_contigs
 
 def print_cmds(f):
     # fo = basename(log).split('.')[0] + '.cmds'

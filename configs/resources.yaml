@@ -8,3 +8,8 @@ count_reads_mem_mb: 100000
 
 assembly_threads: 30
 assembly_mem_mb:  200000
+
+# --- quast --- #
+
+quast_threads: 30
+quast_mem_mb:  200000

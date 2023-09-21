@@ -1,0 +1,23 @@
+Assembly	metaspades_uhgg	megahit_uhgg
+# contigs (>= 0 bp)	5930	5220
+# contigs (>= 1000 bp)	4249	4006
+# contigs (>= 5000 bp)	946	961
+# contigs (>= 10000 bp)	138	158
+# contigs (>= 25000 bp)	2	0
+# contigs (>= 50000 bp)	0	0
+Total length (>= 0 bp)	16329221	15966030
+Total length (>= 1000 bp)	15411242	15190593
+Total length (>= 5000 bp)	7211288	7479332
+Total length (>= 10000 bp)	1767668	2033934
+Total length (>= 25000 bp)	53457	0
+Total length (>= 50000 bp)	0	0
+# contigs	5930	5220
+Largest contig	28207	24635
+Total length	16329221	15966030
+GC (%)	49.56	49.55
+N50	4505	4695
+N90	1385	1500
+auN	5322.0	5610.3
+L50	1149	1065
+L90	3646	3343
+# N's per 100 kbp	5.51	0.00

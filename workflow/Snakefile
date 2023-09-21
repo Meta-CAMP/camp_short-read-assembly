@@ -6,6 +6,7 @@ import os
 from os.path import abspath, basename, dirname, exists, join
 import pandas as pd
 import shutil # from shutil import copy doesn't work here
+import tarfile
 from utils import Workflow_Dirs, ingest_samples
 
 
@@ -32,7 +33,7 @@ for a in config['assembler'].split(','):
 
 
 def workflow_mode(wildcards):
-    out = []
+    out = [join(dirs.OUT, '2_quast', 'report.tsv')]
     for a in ASSEMBS:
         out.extend(expand(join(dirs.OUT, a, '{sample}', 'scaffolds.fasta'), sample = SAMPLES))
     return(out)
@@ -46,6 +47,7 @@ else:
 rule all:
     input:
         join(dirs.OUT, 'final_reports', 'samples.csv'),
+        join(dirs.OUT, 'final_reports', 'quast.tar.gz'),
         join(dirs.OUT, 'final_reports', 'ctg_stats.csv'),
         join(dirs.OUT, 'final_reports', 'ctg_lens.csv')
 
@@ -148,17 +150,42 @@ rule concat_lengths:
         """
 
 
+rule quast:
+    input:
+        expand(join(dirs.OUT, '{asm}', '{sample}', 'scaffolds.fasta'), asm = ASSEMBS, sample = SAMPLES),
+    output:
+        join(dirs.OUT, '2_quast', 'report.tsv'),
+    log:
+        join(dirs.LOG, 'quast', 'all_assemblies.out'),
+    conda:
+        join(config['env_yamls'], 'quast.yaml'),
+    threads: config['quast_threads'],
+    resources:
+        mem_mb = config['quast_mem_mb'],
+    params:
+        labels = ','.join([a.split('_')[1] + '_' + s for a in ASSEMBS for s in SAMPLES]),
+        out_dir = join(dirs.OUT, '2_quast'),
+    shell:
+        """
+        quast.py --threads {threads} --min-contig 0 -o {params.out_dir} --labels {params.labels} {input} --no-plots || touch {output} > {log} 2>&1
+        """
+
+
 rule make_config:
     input:
         workflow_mode,
     output:
-        join(dirs.OUT, 'final_reports', 'samples.csv')
+        tar = join(dirs.OUT, 'final_reports', 'quast.tar.gz'),
+        csv = join(dirs.OUT, 'final_reports', 'samples.csv'),
     params:
+        quast_dir = join(dirs.OUT, '2_quast'),
         out_dir = join(dirs.OUT, 'final_reports'),
         tmp_dir = dirs.TMP,
     run:
+        with tarfile.open(str(output.tar),"w:gz") as tar:
+            tar.add(str(params.quast_dir))
         dct = {}
-        for i in input:
+        for i in input[1:]:
             info = str(i).split('/')
             s = info[-2]
             a = info[-3].split('_')[1]
@@ -172,5 +199,5 @@ rule make_config:
         df = pd.DataFrame.from_dict(dct, orient ='index')
         df.reset_index(inplace = True)
         df.rename(columns = {'index': 'sample_name'}, inplace = True)
-        df.to_csv(str(output), index = False)
+        df.to_csv(str(output.csv), index = False)
 
