@@ -1,16 +1,12 @@
 # Short-Read Assembly
 
-[![Documentation Status](https://img.shields.io/readthedocs/camp_short-read-assembly)](https://camp-documentation.readthedocs.io/en/latest/short-read-assembly.html) ![Version](https://img.shields.io/badge/version-0.5.2-brightgreen)
+[![Documentation Status](https://img.shields.io/readthedocs/camp_short-read-assembly)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) ![Version](https://img.shields.io/badge/version-0.5.2-brightgreen)
 
 ## Overview
 
 This module is designed to function as both a standalone short-read assembly pipeline as well as a component of the larger CAMP metagenome analysis pipeline. As such, it is both self-contained (ex. instructions included for the setup of a versioned environment, etc.), and seamlessly compatible with other CAMP modules (ex. ingests and spawns standardized input/output config files, etc.). 
 
 Both MetaSPAdes and MegaHit are provided as assembly algorithm options. 
-
-## Approach
-
-Under construction.
 
 ## Installation
 
