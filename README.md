@@ -1,6 +1,6 @@
 # Short-Read Assembly
 
-[![Documentation Status](https://img.shields.io/badge/docs-passing-brightgreen.svg)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) ![Version](https://img.shields.io/badge/version-0.6.0-brightgreen)
+[![Documentation Status](https://img.shields.io/badge/docs-passing-brightgreen.svg)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) ![Version](https://img.shields.io/badge/version-0.6.1-brightgreen)
 <!-- [![Documentation Status](https://img.shields.io/readthedocs/camp_short-read-assembly)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) -->
 
 ## Overview
@@ -11,9 +11,9 @@ Both MetaSPAdes and MegaHit are provided as assembly algorithm options.
 
 ## Installation
 
-1. Clone repo from [Github](<https://github.com/MetaSUB-CAMP/camp_short-read-assembly>).
+1. Clone repo from [Github](<https://github.com/Meta-CAMP/camp_short-read-assembly>).
 ```Bash
-git clone https://github.com/MetaSUB-CAMP/camp_short-read-assembly
+git clone https://github.com/Meta-CAMP/camp_short-read-assembly
 ```
 
 2. Set up the conda environment using `configs/conda/short-read-assembly.yaml`. 
