@@ -18,7 +18,6 @@ dirs = Workflow_Dirs(config['work_dir'], "short-read-assembly")
 dirs_ext = config['ext'] # join(dirname(abspath(__file__)), 'ext')
 dirs_scr = join(dirs_ext, 'scripts')
 
-
 # Load sample names and input files 
 SAMPLES = ingest_samples(config['samples'], dirs.TMP)
 ASSEMBS = []
@@ -63,8 +62,7 @@ rule metaspades_assembly:
         join(dirs.OUT,'0_metaspades','{sample}', 'scaffolds.fasta'),
     log:
         join(dirs.LOG, 'metaspades', '{sample}.out'),
-    conda:
-        join(config['env_yamls'], 'assemblers.yaml'),
+    conda: "assemblers",
     threads:
         config['assembly_threads'],
     resources:
@@ -95,8 +93,7 @@ rule megahit_assembly:
         join(dirs.OUT,'1_megahit','{sample}', 'scaffolds.fasta'),
     log:
         join(dirs.LOG, 'megahit', '{sample}.out'),
-    conda:
-        join(config['env_yamls'], 'assemblers.yaml'),
+    conda: "assemblers",
     threads:
         config['assembly_threads'],
     resources:
@@ -157,8 +154,7 @@ rule quast:
         join(dirs.OUT, '2_quast', 'report.tsv'),
     log:
         join(dirs.LOG, 'quast', 'all_assemblies.out'),
-    conda:
-        join(config['env_yamls'], 'quast.yaml'),
+    conda: "quast",
     threads: config['quast_threads'],
     resources:
         mem_mb = config['quast_mem_mb'],
