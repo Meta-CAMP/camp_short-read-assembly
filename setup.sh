@@ -62,7 +62,7 @@ check_and_install_env() {
     fi
 }
 
-# Check and install MultiQC and BBMap environments
+# Check and install environments
 check_and_install_env "assemblers" "configs/conda/assemblers.yaml"
 check_and_install_env "quast" "configs/conda/quast.yaml"
 check_and_install_env "dataviz" "configs/conda/dataviz.yaml"
@@ -71,8 +71,6 @@ check_and_install_env "dataviz" "configs/conda/dataviz.yaml"
 # Remove existing parameters.yaml if present
 [ -f "$PARAMS_FILE" ] && rm "$PARAMS_FILE"
 # Create new parameters.yaml file
-EXT_PATH="$SR_ASSEMBLY_WORK_DIR/workflow/ext"
-
 echo "#'''Parameters config.'''#
 
 # --- general --- #
