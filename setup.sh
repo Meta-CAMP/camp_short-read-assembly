@@ -39,12 +39,6 @@ SR_ASSEMBLY_WORK_DIR="$(realpath "${USER_WORK_DIR:-$PWD}")"
 echo "Working directory set to: $SR_ASSEMBLY_WORK_DIR"
 #echo "export ${SR_ASSEMBLY_WORK_DIR} >> ~/.bashrc" 
 
-# Generate parameters.yaml
-SCRIPT_DIR=$(pwd)
-EXT_PATH="$SR_ASSEMBLY_WORK_DIR/workflow/ext"
-PARAMS_FILE="test_data/parameters.yaml"
-
-
 # Install conda envs: assemblers, quast
 cd $DEFAULT_PATH
 DEFAULT_CONDA_ENV_DIR=$(conda info --base)/envs
@@ -67,6 +61,10 @@ check_and_install_env "assemblers" "configs/conda/assemblers.yaml"
 check_and_install_env "quast" "configs/conda/quast.yaml"
 check_and_install_env "dataviz" "configs/conda/dataviz.yaml"
 
+# Generate parameters.yaml
+SCRIPT_DIR=$(pwd)
+EXT_PATH="$SR_ASSEMBLY_WORK_DIR/workflow/ext"
+PARAMS_FILE="test_data/parameters.yaml"
 
 # Remove existing parameters.yaml if present
 [ -f "$PARAMS_FILE" ] && rm "$PARAMS_FILE"
@@ -85,9 +83,7 @@ option:     'meta'" > "$PARAMS_FILE"
 echo "✅ parameters.yaml file created successfully in test_data/"
 
 # Generate configs/parameters.yaml
-SCRIPT_DIR=$(pwd)
 PARAMS_FILE="configs/parameters.yaml"
-
 # Remove existing parameters.yaml if present
 [ -f "$PARAMS_FILE" ] && rm "$PARAMS_FILE"
 # Create new parameters.yaml file
@@ -107,4 +103,4 @@ sed -i.bak "s|/path/to/camp_short-read-assembly|$DEFAULT_PATH|g" test_data/sampl
 
 echo "✅ parameters.yaml file created successfully in configs/"
 
-echo "🎯 Setup complete! You can now test the workflow using \`python workflow/short-read-assembly.py test\`"
+echo "🎯 Setup complete! You can now <F5>test the workflow using \`python workflow/short-read-assembly.py test\`"
