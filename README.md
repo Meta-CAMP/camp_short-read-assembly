@@ -1,6 +1,6 @@
 # Short-Read Assembly
 
-[![Documentation Status](https://img.shields.io/badge/docs-passing-brightgreen.svg)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) ![Version](https://img.shields.io/badge/version-0.6.1-brightgreen)
+[![Documentation Status](https://img.shields.io/badge/docs-passing-brightgreen.svg)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) ![Version](https://img.shields.io/badge/version-0.7.0-brightgreen)
 <!-- [![Documentation Status](https://img.shields.io/readthedocs/camp_short-read-assembly)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) -->
 
 ## Overview
@@ -11,25 +11,32 @@ Both MetaSPAdes and MegaHit are provided as assembly algorithm options.
 
 ## Installation
 
+### Install `conda`
+
+If you don't already have `conda` handy, we recommend installing `miniforge`, which is a minimal conda installer that, by default, installs packages from open-source community-driven channels such as `conda-forge`.
+```Bash
+# If you don't already have conda on your system...
+wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+```
+
+Run the following command to initialize Conda for your shell. This will configure your shell to recognize conda activate. 
+```Bash
+conda init
+```
+
+Restart your terminal or run:
+```Bash
+source ~/.bashrc  # For bash users
+source ~/.zshrc   # For zsh users
+```
+### Setting up the Short-Read Assembly Module
+
 1. Clone repo from [Github](<https://github.com/Meta-CAMP/camp_short-read-assembly>).
 ```Bash
 git clone https://github.com/Meta-CAMP/camp_short-read-assembly
 ```
 
-2. Set up the conda environment using `configs/conda/short-read-assembly.yaml`. 
-
-If you don't already have `conda` handy, we recommend installing `miniforge`, which is a minimal conda installer that, by default, installs packages from open-source community-driven channels such as `conda-forge`.
-```Bash
-# If you don't already have conda on your system...
-# wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-
-# Create and activate conda environment 
-cd camp_short-read-assembly
-conda env create -f configs/conda/short-read-assembly.yaml
-conda activate short-read-assembly
-```
-
-3. Set up the rest of the module interactively by running `setup.sh`. This will install the necessary conda environments (if they have not been installed already) and generate `parameters.yaml` as well as set up the paths in `test_data/samples.csv` for testing. 
+2. Set up the rest of the module interactively by running `setup.sh`. This will install the necessary conda environments (if they have not been installed already) and generate `parameters.yaml` as well as set up the paths in `test_data/samples.csv` for testing. 
 ```Bash
 source setup.sh
 
@@ -41,6 +48,7 @@ source ~/.bashrc # or source ~/.zshrc
 4. Make sure the installed pipeline works correctly. With 40 threads and a maximum of 50 GB allocated, the test dataset should finish in approximately 2 minutes.
 ```Bash
 # Run tests on the included sample dataset
+conda activate camp
 python camp_short-read-assembly/workflow/short-read-assembly.py test
 ```
 
@@ -83,6 +91,7 @@ To run CAMP on the command line, use the following, where `/path/to/work/dir` is
     - Relative or absolute paths to the Snakefile and/or the working directory (if you're running elsewhere) are accepted!
     - The parameters and resource config YAMLs can also be customized.
 ```Bash
+conda activate camp
 python /path/to/camp_short-read-assembly/workflow/short-read-assembly.py \
     (-c number_of_cores_allocated) \
     (-p /path/to/parameters.yaml) \
@@ -97,6 +106,7 @@ To run CAMP on a job submission cluster (for now, only Slurm is supported), use 
     - `--slurm` is an optional flag that submits all rules in the Snakemake pipeline as `sbatch` jobs. 
     - In Slurm mode, the `-c` flag refers to the maximum number of `sbatch` jobs submitted in parallel, **not** the pool of cores available to run the jobs. Each job will request the number of cores specified by threads in `configs/resources/slurm.yaml`.
 ```Bash
+conda activate camp
 sbatch -J jobname -o jobname.log << "EOF"
 #!/bin/bash
 python /path/to/camp_short-read-assembly/workflow/short-read-assembly.py --slurm \
@@ -110,10 +120,8 @@ EOF
 
 #### Finishing Up
 
-1. To plot grouped bar graph(s) of the number of reads and bases in each *de novo* assembly (from each sample), set up the dataviz environment and follow the instructions in the Jupyter notebook:
+1. To plot grouped bar graph(s) of the number of reads and bases in each *de novo* assembly (from each sample), follow the instructions in the Jupyter notebook:
 ```Bash
-conda env create -f configs/conda/dataviz.yaml
-conda activate dataviz
 jupyter notebook &
 ```
 

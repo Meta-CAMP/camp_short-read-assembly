@@ -62,7 +62,7 @@ rule metaspades_assembly:
         join(dirs.OUT,'0_metaspades','{sample}', 'scaffolds.fasta'),
     log:
         join(dirs.LOG, 'metaspades', '{sample}.out'),
-    conda: "assemblers",
+    conda: "spades",
     threads:
         config['assembly_threads'],
     resources:
@@ -93,7 +93,7 @@ rule megahit_assembly:
         join(dirs.OUT,'1_megahit','{sample}', 'scaffolds.fasta'),
     log:
         join(dirs.LOG, 'megahit', '{sample}.out'),
-    conda: "assemblers",
+    conda: "megahit",
     threads:
         config['assembly_threads'],
     resources:
