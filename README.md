@@ -1,6 +1,8 @@
 # Short-Read Assembly
 
-[![Documentation Status](https://img.shields.io/badge/docs-passing-brightgreen.svg)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) ![Version](https://img.shields.io/badge/version-0.7.0-brightgreen)
+![Version](https://img.shields.io/badge/version-0.8.0-brightgreen)
+
+<!-- [![Documentation Status](https://img.shields.io/badge/docs-passing-brightgreen.svg)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) -->
 <!-- [![Documentation Status](https://img.shields.io/readthedocs/camp_short-read-assembly)](https://camp-documentation.readthedocs.io/en/latest/shortreadassembly/index.html) -->
 
 ## Overview
@@ -38,6 +40,7 @@ git clone https://github.com/Meta-CAMP/camp_short-read-assembly
 
 2. Set up the rest of the module interactively by running `setup.sh`. This will install the necessary conda environments (if they have not been installed already) and generate `parameters.yaml` as well as set up the paths in `test_data/samples.csv` for testing. 
 ```Bash
+cd camp_short-read-assembly/
 source setup.sh
 
 # If you encounter issues where conda activate is not recognized, follow these steps to properly initialize Conda
@@ -45,7 +48,7 @@ conda init
 source ~/.bashrc # or source ~/.zshrc
 ```
 
-4. Make sure the installed pipeline works correctly. With 40 threads and a maximum of 50 GB allocated, the test dataset should finish in approximately 2 minutes.
+4. Make sure the installed pipeline works correctly. With 10 threads and a maximum of 40 GB allocated, the test dataset should finish in under 5 minutes.
 ```Bash
 # Run tests on the included sample dataset
 conda activate camp

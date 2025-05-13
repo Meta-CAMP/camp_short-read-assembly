@@ -126,3 +126,8 @@ dmypy.json
 # Random 
 *.DS_Store
 *.idea
+
+# Other
+.snakemake/
+short-read-assembly.out
+test_out/

@@ -38,7 +38,7 @@ find_install_camp_env() {
         echo "✅ The main CAMP environment is already installed in $DEFAULT_CONDA_ENV_DIR."
     else
         echo "🚀 Installing the main CAMP environment in $DEFAULT_CONDA_ENV_DIR/..."
-        conda create --prefix "$DEFAULT_CONDA_ENV_DIR/camp" -c conda-forge -c bioconda biopython blast bowtie2 bumpversion click click-default-group cookiecutter jupyter matplotlib numpy pandas samtools scikit-learn scipy seaborn snakemake umap-learn upsetplot
+        conda create --prefix "$DEFAULT_CONDA_ENV_DIR/camp" -c conda-forge -c bioconda biopython blast bowtie2 bumpversion click click-default-group cookiecutter jupyter matplotlib numpy pandas samtools scikit-learn scipy seaborn snakemake=7.32.4 umap-learn upsetplot
         echo "✅ The main CAMP environment has been installed successfully!"
     fi
 }
@@ -63,7 +63,7 @@ ask_database() {
     echo "🛠️  Checking for $DB_NAME database..."
 
     while true; do
-        read -p "❓ Do you already have $DB_NAME installed? (y/n): " RESPONSE
+        read -p "❓ Do you already have the $DB_NAME database installed? (y/n): " RESPONSE
         case "$RESPONSE" in
             [Yy]* )
                 while true; do
@@ -76,22 +76,19 @@ ask_database() {
                         echo "⚠️ The provided path does not exist or is empty. Please check and try again."
                         read -p "Do you want to re-enter the path (r) or install $DB_NAME instead (i)? (r/i): " RETRY
                         if [[ "$RETRY" == "i" ]]; then
-                            break  # Exit inner loop to start installation
+                            break  # Exit outer loop to start installation
                         fi
                     fi
                 done
-                if [[ "$RETRY" == "i" ]]; then
-                    break  # Exit outer loop to install the database
-                fi
                 ;;
             [Nn]* )
-                read -p "📂 Enter the directory where you want to install $DB_NAME: " DB_PATH
-                install_database "$DB_NAME" "$DB_VAR_NAME" "$DB_PATH"
-                return  # Exit function after installation
-                ;;
+                break # Exit outer loop to start installation
+                ;; 
             * ) echo "⚠️ Please enter 'y(es)' or 'n(o)'.";;
         esac
     done
+    read -p "📂 Enter the directory where you want to install $DB_NAME: " DB_PATH
+    install_database "$DB_NAME" "$DB_VAR_NAME" "$DB_PATH"
 }
 
 # Install databases in the specified directory
@@ -189,8 +186,13 @@ assembler:  'metaspades,megahit'
 # The default is 'meta' (metagenomics DNA) but one of 'rna' (RNA-Seq), 'metaviral' (viral DNA in a metagenomic context), or 'metaplasmid' (plasmid DNA in a metagenomic context) can also be selected
 option:     'meta'" > "$PARAMS_FILE"
 
-# Modify test_data/samples.csv
-
 echo "✅ parameters.yaml file created successfully in configs/"
 
-echo "🎯 Setup complete! You can now <F5>test the workflow using \`python workflow/short-read-assembly.py test\`"
+# Modify test_data/samples.csv
+INPUT_CSV="$MODULE_WORK_DIR/test_data/samples.csv" 
+echo "🚀 Generating test_data/samples.csv in $INPUT_CSV ..."
+
+sed -i.bak "s|/path/to/camp_short-read-assembly|$MODULE_WORK_DIR|g" $INPUT_CSV
+echo "✅ Test data input CSV created at: $INPUT_CSV"
+
+echo "🎯 Setup complete! You can now test the workflow using \`python workflow/short-read-assembly.py test\`"
