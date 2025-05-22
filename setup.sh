@@ -34,7 +34,7 @@ show_welcome() {
 
 # Check to see if the base CAMP environment has already been installed 
 find_install_camp_env() {
-    if conda env list | grep -q "$DEFAULT_CONDA_ENV_DIR/camp"; then 
+    if conda env list | awk '{print $1}' | grep -xq "camp"; then 
         echo "✅ The main CAMP environment is already installed in $DEFAULT_CONDA_ENV_DIR."
     else
         echo "🚀 Installing the main CAMP environment in $DEFAULT_CONDA_ENV_DIR/..."
@@ -151,7 +151,7 @@ done
 
 # Generate parameters.yaml
 SCRIPT_DIR=$(pwd)
-EXT_PATH="$SR_ASSEMBLY_WORK_DIR/workflow/ext"
+EXT_PATH="$MODULE_WORK_DIR/workflow/ext"
 PARAMS_FILE="$MODULE_WORK_DIR/test_data/parameters.yaml"
 
 # Remove existing parameters.yaml if present
